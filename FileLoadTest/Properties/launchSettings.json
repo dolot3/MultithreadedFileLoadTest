@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "FileLoadTest": {
+      "commandName": "Project",
+      "commandLineArgs": "1"
+    }
+  }
+}

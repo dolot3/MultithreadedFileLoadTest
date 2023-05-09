@@ -1,24 +1,22 @@
-﻿namespace FileLoadTest
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
+
+namespace FileLoadTest
 {
     internal class Program
     {
         static void Main(string[] args)
         {
 
-            string input;
-            Console.WriteLine("Enter 1 for single threaded or 2 for multithreaded:");
-            input = Console.ReadLine();
-            Console.WriteLine();
-
-            int choice = int.Parse(input);
+            int choice = int.Parse(args[0]);
 
             var startTime = DateTime.Now;
 
-            if (choice == 1)
+            if (choice == 1)    //single threaded
             {
-                Thread.Sleep(1000);
+                LoadFile();
             }
-            else if (choice == 2)
+            else if (choice == 2)   //multithreaded
             {
                 Thread.Sleep(2000);
             }
@@ -35,6 +33,45 @@
             Console.WriteLine("Hit enter to terminate.");
             Console.ReadLine();
             
+        }
+
+        static void LoadFile()
+        {
+            string fileName = @"d:\_work\testdata\testdata_tab.txt";
+            string? data;
+            DataModel theData;
+            List<DataModel> theList = new();
+
+            var reader = new System.IO.StreamReader(fileName);
+
+            while (!reader.EndOfStream) {
+                data = reader.ReadLine();
+                theData = ReadData(data);
+                theList.Add(theData);
+                if (theList.Count % 5000 == 0)
+                {
+                    LoadData(theList.ToArray());
+                    theList.Clear();
+                }
+            }
+
+
+        }
+
+        static void LoadData(DataModel[] data)
+        {
+
+            LoadContext context = new();
+            context.AddRange(data);
+
+            context.SaveChanges();
+
+            Console.WriteLine("Load Data");
+        }
+
+        static DataModel ReadData(string data)
+        {
+            return new DataModel(data);
         }
     }
 }
