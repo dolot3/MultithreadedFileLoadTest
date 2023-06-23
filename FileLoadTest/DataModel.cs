@@ -37,7 +37,8 @@ namespace FileLoadTest
         }
 
         [Key]
-        public int id { get; set; }
+        public int id { get; set; } = 0;
+
         public string ssn { get; set; }
 
         public string name { get; set; }

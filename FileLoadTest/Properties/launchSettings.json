@@ -2,7 +2,7 @@
   "profiles": {
     "FileLoadTest": {
       "commandName": "Project",
-      "commandLineArgs": "1"
+      "commandLineArgs": "2"
     }
   }
 }
