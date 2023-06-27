@@ -9,27 +9,20 @@ namespace FileLoadTest
     {
         static void Main(string[] args)
         {
-
-            int choice = int.Parse(args[0]);
+            bool isMultiThread = bool.Parse(args[0]);
+            bool logProcess = bool.Parse(args[1]);
 
             var startTime = DateTime.Now;
 
-            var taskList = new List<Task>();   
+            CountdownEvent theEvent = new CountdownEvent(1);
+                        
+            LoadFile(isMultiThread, logProcess, theEvent);
 
-            if (choice == 1)    //single threaded
-            {
-                LoadFile(false, taskList);
-            }
-            else if (choice == 2)   //multithreaded
-            {
-                LoadFile(true, taskList);
-            }
-
-           
+            if (isMultiThread) { theEvent.Wait(); }
 
             var endTime = DateTime.Now;
             var diff = endTime - startTime;
-
+           
             Console.WriteLine("Elapsed Time:");
             Console.WriteLine($"hours: {diff.Hours}");
             Console.WriteLine($"Minutes: {diff.Minutes}");
@@ -38,10 +31,10 @@ namespace FileLoadTest
             Console.WriteLine();
             Console.WriteLine("Hit enter to terminate.");
             Console.ReadLine();
-            
+                        
         }
 
-        static void LoadFile(bool isMultiThread, List<Task> taskList)
+        static void LoadFile(bool isMultiThread, bool logProcess, CountdownEvent theEvent)
         {
             string fileName = @"d:\_work\testdata\testdata_tab.txt";
             string? data;
@@ -51,8 +44,6 @@ namespace FileLoadTest
             int groupCount = 1;
 
             var reader = new System.IO.StreamReader(fileName);
-
-            ThreadPool.SetMaxThreads(6, 6);
 
             while (!reader.EndOfStream) {
 
@@ -67,20 +58,26 @@ namespace FileLoadTest
                 {
                     if (!isMultiThread)
                     {
-                        LoadRunner runner = new LoadRunner(theList.ToArray(), groupCount);
-                        runner.Run();
+                        LoadRunner runner = new LoadRunner(theList.ToArray(), groupCount, null);
+                        runner.Run(logProcess);
                         
                     } else
                     {
-                        LoadRunner runner = new LoadRunner(theList.ToArray(), groupCount);
-                        ThreadPool.QueueUserWorkItem(delegate { runner.Run(); });
 
-                        while(ThreadPool.PendingWorkItemCount > 1)
+                        LoadRunner runner = new LoadRunner(theList.ToArray(), groupCount, theEvent);
+
+                        ThreadPool.QueueUserWorkItem(delegate { runner.Run(logProcess); });
+                        if (groupCount > 1) { theEvent.AddCount(1); }
+
+                        //Prevent the number of pending work items from growing too large and consuming too much memory.
+                        while (ThreadPool.PendingWorkItemCount > 0)
                         {
-                            //Console.WriteLine($"Sleeping thread.  Pending work items = {ThreadPool.PendingWorkItemCount}");
+                            if (logProcess)
+                                Console.WriteLine($"Sleeping thread.  Pending work items = {ThreadPool.PendingWorkItemCount}");
+
                             Thread.Sleep(10);
                         }
-
+                        
                     }
                     theList.Clear();
                     groupCount++;

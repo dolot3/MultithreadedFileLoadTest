@@ -10,21 +10,25 @@ namespace FileLoadTest
     {
         DataModel[] data;
         int groupNumber;
+        CountdownEvent theEvent;
 
-        public LoadRunner(DataModel[] theData, int group) 
+        public LoadRunner(DataModel[] theData, int group, CountdownEvent countdownEvent) 
         {
             data = theData;
             groupNumber = group;
+            theEvent = countdownEvent;
         }
 
-        public void Run()
+        public void Run(bool logProcess)
         {
-            //Console.WriteLine($"Starting group {groupNumber}");
+            if (logProcess) 
+                Console.WriteLine($"Starting group {groupNumber}");
 
             using (LoadContext context = new()) {
                 context.AddRange(data);
                 context.SaveChanges();
             }
+            if (theEvent != null) theEvent.Signal();
 
         }
     }
