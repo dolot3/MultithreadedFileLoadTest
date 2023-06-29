@@ -10,9 +10,9 @@ namespace FileLoadTest
     {
         DataModel[] data;
         int groupNumber;
-        CountdownEvent theEvent;
+        CountdownEvent? theEvent;
 
-        public LoadRunner(DataModel[] theData, int group, CountdownEvent countdownEvent) 
+        public LoadRunner(DataModel[] theData, int group, CountdownEvent? countdownEvent = null) 
         {
             data = theData;
             groupNumber = group;
@@ -28,6 +28,8 @@ namespace FileLoadTest
                 context.AddRange(data);
                 context.SaveChanges();
             }
+
+            //If running multithreaded, then signal that this batch is complete.
             if (theEvent != null) theEvent.Signal();
 
         }
