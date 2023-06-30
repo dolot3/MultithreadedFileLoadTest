@@ -1,1 +1,1 @@
-# MultithreadedFileLoadTest
+This project is an experimentation on my part in multi-threaded programming - trying to learn some of the ins and outs of the technology.  This tool takes a text file, parses it, and loads the data into a database.  It can be ran in both single and multi-threaded modes.  Loading data in a multi-threaded manner is about 3X faster in my tests than loading in a single-threaded fashion, but there are some things you have to control in order to make sure all the threads finish and that memory usage doesn't go through the roof.
